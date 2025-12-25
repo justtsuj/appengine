@@ -1,0 +1,19 @@
+syntax = "proto2";
+
+package com.rokid.rkengine.confirm;
+
+option java_package = "com.rokid.rkengine.confirm";
+option java_outer_classname = "Confirm";
+
+message SetConfirmRequest {
+  required string appId = 1;
+  required string confirmIntent = 2;
+  required string confirmSlot = 3;
+  repeated string confirmOptions = 4;
+  required string attributes = 5;
+}
+
+message SetConfirmResponse {
+  required bool success = 1;
+  optional string message = 2;
+}

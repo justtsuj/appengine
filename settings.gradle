@@ -1,0 +1,3 @@
+rootProject.name = 'appengine'
+
+include 'app'

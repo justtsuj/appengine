@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    android:versionCode="10"
+    android:versionName="10.0.0"
+    package="com.rokid.rkengine"
+    platformBuildVersionCode="10"
+    platformBuildVersionName="10.0.0">
+    <uses-sdk
+        android:minSdkVersion="19"
+        android:targetSdkVersion="23"/>
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- 添加读写外部存储权限 -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <application 
+        android:persistent="true">
+        <service
+            android:name="com.rokid.rkengine.service.RkEngineService"
+            android:enabled="true"
+            android:exported="true"/>
+    </application>
+</manifest>

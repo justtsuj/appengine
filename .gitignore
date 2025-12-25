@@ -1,0 +1,14 @@
+# Built application files
+app/build/
+app/release/
+
+# Gradle
+.gradle/
+build/
+
+# Local configuration
+local.properties
+config.properties
+
+# IDE
+.idea/
