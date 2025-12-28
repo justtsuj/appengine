@@ -9,16 +9,16 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.net.ConnectException;
+import java.net.SocketTimeoutException;
+import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
-import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
-import okhttp3.Response;
-import okhttp3.ResponseBody;
 
 /**
  * 和风天气API客户端
@@ -91,10 +91,23 @@ public class QWeather extends CustomServiceBase {
         String tts = null;
         try {
             String locationId = resolveLocationToId(location);
-            String responseJson = executeRequest(baseUrl + "/v7/weather/3d?key=" + token + "&location=" + locationId);
+            String forecastUrl = baseUrl + "/v7/weather/3d?key=" + token + "&location=" + locationId;
+            Request forecastRequest = new Request.Builder()
+                    .url(forecastUrl)
+                    .get()
+                    .build();
+            String responseJson = super.executeRequest(forecastRequest);
+            validateApiResponse(responseJson);
             tts = parseForecastResponse(responseJson, day);
+        } catch (SocketTimeoutException e) {
+            Logger.m4w("和风天气服务 timeout for " + baseUrl);
+            tts = "和风天气服务连接超时，请稍后重试";
+        } catch (ConnectException | UnknownHostException e) {
+            Logger.m4w("和风天气服务 connection failed for " + baseUrl);
+            tts = "无法连接到和风天气服务，请检查服务地址和网络状态";
         } catch (IOException e) {
-            tts = "天气服务不可以用";
+            Logger.m4w("和风天气服务 IO error for " + baseUrl);
+            tts = "和风天气服务通信异常，请检查服务状态";
         }
         JSONArray directives = new JSONArray();
         directives.put(generateTtsDirective(tts, false));
@@ -129,7 +142,7 @@ public class QWeather extends CustomServiceBase {
                         return cityName;
                     }
                 } catch (JSONException e) {
-                    Logger.m1e("Error parsing location value JSON: " + e.getMessage());
+                    Logger.m4w("Error parsing location value JSON: " + e.getMessage());
                 }
             }
         }
@@ -159,7 +172,12 @@ public class QWeather extends CustomServiceBase {
     }
 
     private String fetchLocationIdForCity(String cityName) throws IOException, WeatherApiException {
-        String responseJson = executeRequest(baseUrl + "/geo/v2/city/lookup?key=" + token + "&location=" + cityName);
+        Request locationRequest = new Request.Builder()
+                .url(baseUrl + "/geo/v2/city/lookup?key=" + token + "&location=" + cityName)
+                .get()
+                .build();
+        String responseJson = super.executeRequest(locationRequest);
+        validateApiResponse(responseJson);
 
         try {
             JSONObject root = new JSONObject(responseJson);
@@ -205,6 +223,7 @@ public class QWeather extends CustomServiceBase {
             }
             return "暂无 " + targetDateStr + " 的天气数据";
         } catch (JSONException e) {
+            Logger.m4w("Error parsing forecast data JSON: " + e.getMessage());
             return "解析天气数据失败";
         }
     }
@@ -215,34 +234,14 @@ public class QWeather extends CustomServiceBase {
         }
     }
 
-    private String executeRequest(String url) throws IOException, WeatherApiException {
-        Request request = new Request.Builder()
-                .url(url)
-                .get()
-                .build();
 
-        try (Response response = client.newCall(request).execute()) {
-            if (!response.isSuccessful()) {
-                throw new IOException("HTTP请求失败: " + response.code() + " " + response.message());
-            }
-            ResponseBody body = response.body();
-            if (body == null) {
-                throw new IOException("响应体为空");
-            }
-            String responseJson = body.string();
-            validateApiResponse(responseJson);
-            return responseJson;
-        } catch (IOException e) {
-            throw new IOException("与和风天气API通信失败: " + e.getMessage(), e);
-        }
-    }
 
     private void validateApiResponse(String responseJson) throws WeatherApiException {
         try {
             JSONObject jsonObject = new JSONObject(responseJson);
             String code = jsonObject.optString(KEY_CODE);
             if (!API_CODE_SUCCESS.equals(code)) {
-                Logger.m1e("QWeather API Error: " + responseJson);
+                Logger.m4w("QWeather API Error: " + responseJson);  
                 throw new WeatherApiException("API请求失败", code, "API返回非成功状态码");
             }
         } catch (JSONException e) {

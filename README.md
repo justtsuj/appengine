@@ -1,0 +1,61 @@
+通过修改rokid音箱的核心应用rkengine，使之在原有功能基础上实现接入大模型，接入HA，听歌和查天气。
+
+[视频演示【复活若琪】](https://www.bilibili.com/video/BV1rov6BuEta/?share_source=copy_web&vd_source=354b501bae3c07397047f2b3b75a3d53)
+
+[工作原理](docs/工作原理.md)
+
+# 配置文件
+## 配置后端服务
+1. 申请智谱key，[https://docs.bigmodel.cn/cn/guide/start/quick-start](https://docs.bigmodel.cn/cn/guide/start/quick-start)
+2. 申请和风天气key，[https://dev.qweather.com/docs/start/](https://dev.qweather.com/docs/start/)
+3. 申请HA key，[https://developers.home-assistant.io/docs/auth_api/#long-lived-access-token](https://developers.home-assistant.io/docs/auth_api/#long-lived-access-token)和[https://www.home-assistant.io/docs/authentication/](https://www.home-assistant.io/docs/authentication/)
+4. 部署xiaomusic，<font style="color:rgb(57, 63, 73);background-color:rgb(249, 249, 250);">docker push danmuuu/xiaomusic:arm64-latest，创建容器的参数参考原仓库</font>[https://github.com/hanxi/xiaomusic](https://github.com/hanxi/xiaomusic)。
+
+将上述配置添到配置文件对应的配置项中。
+
+```properties
+# Hook的app ids
+# chat-app.ids=
+# weather-app.ids=
+# smarthome-app.ids=
+# music-app.ids=
+# 智谱
+# zhipu.token=
+# zhipu.system.prompt=
+# zhipu.model=glm-4.6
+# 和风天气
+# qweather.url=
+# qweather.token=
+# homeassistant
+# ha.url=
+# ha.token=
+# xiaomusic
+# xiaomusic.url=
+```
+
+# 安装
+脚本使用adb将配置文件和apk推送到设备，所以需要先下载安装pdb并加入PATH环境变量。
+
+使用usb线直连电脑时，不用指定设备默认使用第一个设备。
+
+`PS> .\push_file_to_rokid.ps1 -ConfigPath [配置文件路径] -ApkPath [https://github.com/justtsuj/appengine/releases/download/v1.0.0/app-release.apk](https://github.com/justtsuj/appengine/releases/download/v1.0.0/app-release.apk)`
+
+若琪的远程adb默认是开启的，在使用远程adb时，需要使用-Devices参数指定设备地址
+
+`PS> .\push_file_to_rokid.ps1 -ConfigPath [配置文件路径] -ApkPath [https://github.com/justtsuj/appengine/releases/download/v1.0.0/app-release.apk](https://github.com/justtsuj/appengine/releases/download/v1.0.0/app-release.apk) -Devices [若琪ip]:5555`
+
+# 功能
+基础能力使用rokid本身的stt，tts和意图识别
+
+## 核心功能
+1. **和大模型聊天**使用智谱ai，默认使用glm-4.6，没有调用任何工具，没有开思考
+2. **查天气**使用和风天气，可以查今天，明天，后天三天的天气
+3. **接入HA**控制家里的设备，单纯把识别的语音指令交给HA的Conversion接口处理并接受响应。
+4. **听音乐**使用[xiaomusic](https://github.com/hanxi/xiaomusic)，在原仓库基础上增加了searchmusicinfo和randommusic接口供rokid使用，可以实现播放指定歌曲和随机放一首歌曲。目前播放完一首歌后会停止。
+
+# 贡献
+目前只是基础版本，功能比较简陋，没有经过充分测试。如果你有好的意见和建议欢迎pr。
+
+# 感谢
+[xiaomusic](https://github.com/hanxi/xiaomusic)
+

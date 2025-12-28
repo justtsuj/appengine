@@ -9,11 +9,13 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.net.ConnectException;
+import java.net.SocketTimeoutException;
+import java.net.UnknownHostException;
 import java.util.concurrent.TimeUnit;
 
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
-import okhttp3.Response;
 
 
 public class XiaoMusic extends CustomServiceBase {
@@ -55,7 +57,7 @@ public class XiaoMusic extends CustomServiceBase {
                 return null;
             }
         }catch (JSONException | UnsupportedEncodingException e){
-            Logger.m1e("异常请求");
+            Logger.m4w("xiaomusic服务 JSON error for " + baseUrl);
             return null;
         }
         //构造请求
@@ -65,26 +67,27 @@ public class XiaoMusic extends CustomServiceBase {
         // 从xiaomusic服务器获取播放url
         String audioUrl = null;
         String tts = null;
-        try (Response response = client.newCall(request).execute()) {
-            if (response.isSuccessful() && response.body() != null) {
-                String responseStr = response.body().string();
-                JSONObject jsonObject = new JSONObject(responseStr);
-                if ("OK".equals(jsonObject.getString("ret"))) {
-                    audioUrl = jsonObject.getString("url");
-                    String name = jsonObject.getString("name");
-                    tts = "为您播放" + name;
-                } else {
-                    tts = "未找到音乐";
-                }
+        try {
+            String responseStr = super.executeRequest(request);
+            JSONObject jsonObject = new JSONObject(responseStr);
+            if ("OK".equals(jsonObject.getString("ret"))) {
+                audioUrl = jsonObject.getString("url");
+                String name = jsonObject.getString("name");
+                tts = "为您播放" + name;
             } else {
-                Logger.m1e("异常响应");
-                return null;
+                tts = "未找到音乐";
             }
+        } catch (SocketTimeoutException e) {
+            Logger.m4w("xiaomusic服务 timeout for " + baseUrl);
+            tts = "xiaomusic服务连接超时，请稍后重试";
+        } catch (ConnectException | UnknownHostException e) {
+            Logger.m4w("xiaomusic服务 connection failed for " + baseUrl);
+            tts = "无法连接到xiaomusic服务，请检查服务地址和网络状态";
         } catch (IOException e) {
-            Logger.m1e("响应异常");
-            return null;
+            Logger.m4w("xiaomusic服务 IO error for " + baseUrl);
+            tts = "xiaomusic服务通信异常，请检查服务状态";
         } catch (JSONException e) {
-            Logger.m1e("异常响应");
+            Logger.m4w("xiaomusic服务 JSON error for " + baseUrl);
             return null;
         }
         //构造directives

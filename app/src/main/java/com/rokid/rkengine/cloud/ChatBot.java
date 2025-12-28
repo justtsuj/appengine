@@ -7,6 +7,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.net.ConnectException;
+import java.net.SocketTimeoutException;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -16,7 +19,6 @@ import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
-import okhttp3.Response;
 
 public class ChatBot extends CustomServiceBase {
 
@@ -73,9 +75,9 @@ public class ChatBot extends CustomServiceBase {
         this.token = token;
         this.avaliable = true;
         this.client = new OkHttpClient.Builder()
-                .connectTimeout(5, TimeUnit.SECONDS)
-                .readTimeout(5, TimeUnit.SECONDS)
-                .writeTimeout(5, TimeUnit.SECONDS)
+                .connectTimeout(6, TimeUnit.SECONDS)
+                .readTimeout(6, TimeUnit.SECONDS)
+                .writeTimeout(6, TimeUnit.SECONDS)
                 .build();
         this.messageHistory = Collections.synchronizedList(new ArrayList<>());
         if (modelName == null || modelName.isEmpty()) this.modelName = MODEL_NAME;
@@ -87,29 +89,33 @@ public class ChatBot extends CustomServiceBase {
     public JSONArray chat(String userMessageText) {
         if (!avaliable) return null;
         String tts;
+        long startTime = System.currentTimeMillis();
+        RequestBody body;
         try {
-            long startTime = System.currentTimeMillis();
-            RequestBody body = buildRequestBody(userMessageText);
-            Request request = new Request.Builder()
-                    .url(this.baseUrl)
-                    .addHeader("Authorization", "Bearer " + this.token)
-                    .addHeader("Content-Type", JSON_MEDIA_TYPE.toString())
-                    .post(body)
-                    .build();
-            try (Response response = client.newCall(request).execute()) {
-                this.lastExecutionTime = System.currentTimeMillis() - startTime;
-                if (!response.isSuccessful() || response.body() == null) {
-                    tts = "智谱服务返回错误";
-                } else {
-                    String responseBody = response.body().string();
-                    tts = parseChatResponse(responseBody);
-                }
-            } catch (IOException e) {
-                tts = "智谱服务不可用，请检查服务状态";
-            }
-
-        } catch (JSONException e) {
-            tts = "智谱服务解析异常";
+            body = buildRequestBody(userMessageText);
+        } catch (JSONException e){
+            Logger.m4w("智谱服务构造消息失败 " + e.getMessage());
+            return null;
+        }
+        Request request = new Request.Builder()
+                .url(this.baseUrl)
+                .addHeader("Authorization", "Bearer " + this.token)
+                .addHeader("Content-Type", JSON_MEDIA_TYPE.toString())
+                .post(body)
+                .build();
+        try {
+            this.lastExecutionTime = System.currentTimeMillis() - startTime;
+            String responseBody = executeRequest(request);
+            tts = parseChatResponse(responseBody);
+        } catch (SocketTimeoutException e) {
+            Logger.m4w("智谱服务 timeout for " + baseUrl);
+            tts = "智谱服务连接超时，请稍后重试";
+        } catch (ConnectException | UnknownHostException e) {
+            Logger.m4w("智谱服务 connection failed for " + baseUrl);
+            tts = "无法连接到智谱服务，请检查服务地址和网络状态";
+        } catch (IOException e) {
+            Logger.m4w("智谱服务 IO error for " + baseUrl + ", " + e.getMessage());
+            tts = "智谱服务通信异常，请检查服务状态";
         }
         JSONArray directives = new JSONArray();
         directives.put(generateTtsDirective(tts, false));
@@ -143,7 +149,7 @@ public class ChatBot extends CustomServiceBase {
         return RequestBody.create(JSON_MEDIA_TYPE, requestJson.toString());
     }
 
-    private String parseChatResponse(String responseBody) throws JSONException {
+    private String parseChatResponse(String responseBody) {
         try {
             JSONObject jsonResponse = new JSONObject(responseBody);
             JSONArray choices = jsonResponse.optJSONArray(CHOICES);
@@ -158,6 +164,7 @@ public class ChatBot extends CustomServiceBase {
             return "未获取到AI回复";
         }
         catch (JSONException e){
+            Logger.m4w("ChatBot service JSON error for " + baseUrl);
             return "AI回复解析失败";
         }
     }
@@ -192,7 +199,7 @@ public class ChatBot extends CustomServiceBase {
             message.put(ROLE, role);
             message.put(CONTENT, content);
         } catch (JSONException e) {
-            Logger.m1e("Failed to create JSON message object: " + e.getMessage());
+            Logger.m4w("Failed to create JSON message object: " + e.getMessage());
         }
         return message;
     }
