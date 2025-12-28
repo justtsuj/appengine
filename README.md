@@ -34,15 +34,15 @@
 ```
 
 # 安装
-脚本使用adb将配置文件和apk推送到设备，所以需要先下载安装pdb并加入PATH环境变量。
+脚本使用adb将配置文件和apk推送到设备，所以需要先下载安装adb并加入PATH环境变量。
 
 使用usb线直连电脑时，不用指定设备默认使用第一个设备。
 
-`PS> .\push_file_to_rokid.ps1 -ConfigPath [配置文件路径] -ApkPath [https://github.com/justtsuj/appengine/releases/download/v1.0.0/app-release.apk](https://github.com/justtsuj/appengine/releases/download/v1.0.0/app-release.apk)`
+`PS> .\push_file_to_rokid.ps1 -ConfigPath [配置文件路径] -ApkPath https://github.com/justtsuj/appengine/releases/latest/app-release.apk`
 
 若琪的远程adb默认是开启的，在使用远程adb时，需要使用-Devices参数指定设备地址
 
-`PS> .\push_file_to_rokid.ps1 -ConfigPath [配置文件路径] -ApkPath [https://github.com/justtsuj/appengine/releases/download/v1.0.0/app-release.apk](https://github.com/justtsuj/appengine/releases/download/v1.0.0/app-release.apk) -Devices [若琪ip]:5555`
+`PS> .\push_file_to_rokid.ps1 -ConfigPath [配置文件路径] -ApkPath https://github.com/justtsuj/appengine/releases/latest/app-release.apk -Devices [若琪ip]:5555`
 
 # 功能
 基础能力使用rokid本身的stt，tts和意图识别
