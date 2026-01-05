@@ -2,6 +2,7 @@ package com.rokid.rkengine.cloud;
 
 import com.rokid.rkengine.utils.Logger;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -25,38 +26,69 @@ public abstract class CustomServiceBase {
         return avaliable;
     }
 
-    protected JSONObject generateTtsDirective(String tts, boolean disableEvent) {
+    // protected JSONObject generateTtsDirective(String tts, boolean disableEvent) {
+    //     try {
+    //         JSONObject directive = new JSONObject();
+    //         directive.put("type", "voice");
+    //         directive.put("action", "PLAY");
+    //         directive.put("disableEvent", disableEvent);
+    //         JSONObject item = new JSONObject();
+    //         item.put("itemId", "string of itemid");
+    //         item.put("tts", tts);
+    //         directive.put("item", item);
+    //         return directive;
+    //     } catch (JSONException e) {
+    //         Logger.m1e("json error");
+    //         return null;
+    //     }
+    // }
+
+    // protected JSONObject generateMediaDirective(String url, boolean disableEvent) {
+    //     try {
+    //         JSONObject directive = new JSONObject();
+    //         directive.put("type", "media");
+    //         directive.put("action", "PLAY");
+    //         directive.put("disableEvent", disableEvent);
+    //         JSONObject item = new JSONObject();
+    //         item.put("itemId", "string of itemid");
+    //         item.put("type", "AUDIO");
+    //         item.put("url", url);
+    //         directive.put("item", item);
+    //         return directive;
+    //     } catch (JSONException e) {
+    //         Logger.m1e("json error");
+    //         return null;
+    //     }
+    // }
+    protected void patchTTSDirective(JSONObject action, String tts, boolean disableEvent) {
         try {
-            JSONObject directive = new JSONObject();
-            directive.put("type", "voice");
-            directive.put("action", "PLAY");
-            directive.put("disableEvent", disableEvent);
-            JSONObject item = new JSONObject();
-            item.put("itemId", "string of itemid");
-            item.put("tts", tts);
-            directive.put("item", item);
-            return directive;
+            JSONArray directives = action.getJSONObject("response").getJSONObject("action").getJSONArray("directives");
+            for (int i = 0; i < directives.length(); i++) {
+                JSONObject directive = directives.getJSONObject(i);
+                if ("voice".equals(directive.getString("type"))) {
+                    JSONObject item = directive.getJSONObject("item");
+                    item.put("tts", tts);
+                    break;
+                }
+            }
         } catch (JSONException e) {
             Logger.m1e("json error");
-            return null;
         }
     }
 
-    protected JSONObject generateMediaDirective(String url, boolean disableEvent) {
+    protected void patchMediaDirective(JSONObject action, String url, boolean disableEvent) {
         try {
-            JSONObject directive = new JSONObject();
-            directive.put("type", "media");
-            directive.put("action", "PLAY");
-            directive.put("disableEvent", disableEvent);
-            JSONObject item = new JSONObject();
-            item.put("itemId", "string of itemid");
-            item.put("type", "AUDIO");
-            item.put("url", url);
-            directive.put("item", item);
-            return directive;
+            JSONArray directives = action.getJSONObject("response").getJSONObject("action").getJSONArray("directives");
+            for (int i = 0; i < directives.length(); i++) {
+                JSONObject directive = directives.getJSONObject(i);
+                if ("media".equals(directive.getString("type"))) {
+                    JSONObject item = directive.getJSONObject("item");
+                    item.put("url", url);
+                    break;
+                }
+            }
         } catch (JSONException e) {
             Logger.m1e("json error");
-            return null;
         }
     }
 

@@ -38,8 +38,8 @@ public class XiaoMusic extends CustomServiceBase {
                 .build();
     }
 
-    public JSONArray handleMusicReq(JSONObject nlp) {
-        if (!avaliable) return null;
+    public void handleMusicReq(JSONObject nlp, JSONObject action) {
+        if (!avaliable) return;
         String requestUrl = null;
         // 解析意图构造url
         try {
@@ -54,11 +54,11 @@ public class XiaoMusic extends CustomServiceBase {
                 requestUrl = baseUrl + "/randommusic";
             }
             else {
-                return null;
+                return;
             }
         }catch (JSONException | UnsupportedEncodingException e){
             Logger.m4w("xiaomusic服务 JSON error for " + baseUrl);
-            return null;
+            return;
         }
         //构造请求
         Request request = new Request.Builder()
@@ -88,14 +88,12 @@ public class XiaoMusic extends CustomServiceBase {
             tts = "xiaomusic服务通信异常，请检查服务状态";
         } catch (JSONException e) {
             Logger.m4w("xiaomusic服务 JSON error for " + baseUrl);
-            return null;
+            return;
         }
         //构造directives
-        JSONArray directives = new JSONArray();
-        directives.put(generateTtsDirective(tts, false));
+        patchTTSDirective(action, tts, false);
         if (audioUrl != null)
             // 如果报告事件，由于我没有有效的item id，会导致系统会发送一个“点播失败”的tts
-            directives.put(generateMediaDirective(audioUrl, true));
-        return directives;
+            patchMediaDirective(action, audioUrl, false);
     }
 }

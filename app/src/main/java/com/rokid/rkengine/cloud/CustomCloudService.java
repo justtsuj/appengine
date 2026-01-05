@@ -106,31 +106,16 @@ public class CustomCloudService {
         if (!avaliable) return;
         if (action == null) return;
         try {
-            JSONObject responseAction = action.getJSONObject("response").getJSONObject("action");
-
             String appId = nlp.getString("appId");
-            String asr = nlp.getString("asr");
 
-            JSONArray directives = null;
             if (chatBot.avaliable && chatAppIds.contains(appId)) {
-                directives = chatBot.chat(asr);
+                chatBot.chat(nlp, action);
             } else if (qWeather.avaliable && weatherAppIds.contains(appId)) {
-                directives = qWeather.getWeatherForecast(nlp);
+                qWeather.getWeatherForecast(nlp, action);
             } else if (homeAssistant.avaliable && smartHomeAppIds.contains(appId)) {
-                directives = homeAssistant.ProcessConversation(asr);
+                homeAssistant.ProcessConversation(nlp, action);
             } else if (xiaoMusic.avaliable && musicAppIds.contains(appId)) {
-                directives = xiaoMusic.handleMusicReq(nlp);
-            }
-            if (directives != null) {
-                for (int i = 0; i < directives.length(); i++) {
-                    JSONObject directive = directives.getJSONObject(i);
-                    if ("voice".equals(directive.getString("type"))) {
-                        JSONObject item = directive.getJSONObject("item");
-                        chatBot.updateMessageHistory(asr, item.getString("tts"));
-                        break;
-                    }
-                }
-                responseAction.put("directives", directives);
+                xiaoMusic.handleMusicReq(nlp, action);
             }
         } catch (JSONException e) {
             Logger.m1e("json error");

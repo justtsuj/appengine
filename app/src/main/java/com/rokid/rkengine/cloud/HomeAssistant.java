@@ -66,13 +66,15 @@ public class HomeAssistant extends CustomServiceBase {
         executeRequest(request);
     }
 
-    public JSONArray ProcessConversation(String text) {
-        if (!avaliable) return null;
+    public void ProcessConversation(JSONObject nlp, JSONObject action) {
+        if (!avaliable) return;
+
 
         String tts;
         try {
+            String asr = nlp.getString("asr");
             JSONObject data = new JSONObject();
-            data.put("text", text);
+            data.put("text", asr);
             RequestBody body = RequestBody.create(MediaType.get("application/json"), data.toString());
 
             Request request = new Request.Builder()
@@ -101,8 +103,6 @@ public class HomeAssistant extends CustomServiceBase {
             Logger.m4w("Home Assistant JSON error for " + baseUrl);
             tts = "家庭助理服务处理异常";
         }
-        JSONArray directives = new JSONArray();
-        directives.put(generateTtsDirective(tts, true));
-        return directives;
+        patchTTSDirective(action, tts, true);
     }
 }

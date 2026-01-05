@@ -86,16 +86,17 @@ public class ChatBot extends CustomServiceBase {
         this.systemMessage = createMessage(SYSTEM, systemPrompt);
     }
 
-    public JSONArray chat(String userMessageText) {
-        if (!avaliable) return null;
+    public void chat(JSONObject nlp, JSONObject action) {
+        if (!avaliable) return ;
         String tts;
         long startTime = System.currentTimeMillis();
         RequestBody body;
         try {
-            body = buildRequestBody(userMessageText);
+            String asr = nlp.getString("asr");
+            body = buildRequestBody(asr);
         } catch (JSONException e){
             Logger.m4w("智谱服务构造消息失败 " + e.getMessage());
-            return null;
+            return;
         }
         Request request = new Request.Builder()
                 .url(this.baseUrl)
@@ -117,9 +118,7 @@ public class ChatBot extends CustomServiceBase {
             Logger.m4w("智谱服务 IO error for " + baseUrl + ", " + e.getMessage());
             tts = "智谱服务通信异常，请检查服务状态";
         }
-        JSONArray directives = new JSONArray();
-        directives.put(generateTtsDirective(tts, false));
-        return directives;
+        patchTTSDirective(action, tts, false);
     }
 
     private RequestBody buildRequestBody(String userMessageText) throws JSONException {

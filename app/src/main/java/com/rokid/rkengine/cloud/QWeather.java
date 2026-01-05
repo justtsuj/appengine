@@ -73,8 +73,8 @@ public class QWeather extends CustomServiceBase {
 //        return executeRequest(url);
 //    }
 
-    public JSONArray getWeatherForecast(JSONObject nlp) throws WeatherApiException {
-        if (!avaliable) return null;
+    public void getWeatherForecast(JSONObject nlp, JSONObject action) throws WeatherApiException {
+        if (!avaliable) return;
 
         String location = "101010300"; // Default to Beijing
         int day = 0; // Default to today
@@ -109,9 +109,7 @@ public class QWeather extends CustomServiceBase {
             Logger.m4w("和风天气服务 IO error for " + baseUrl);
             tts = "和风天气服务通信异常，请检查服务状态";
         }
-        JSONArray directives = new JSONArray();
-        directives.put(generateTtsDirective(tts, false));
-        return directives;
+        patchTTSDirective(action, tts, false);
     }
 
     private int parseDateFromSlots(JSONObject slots) {
