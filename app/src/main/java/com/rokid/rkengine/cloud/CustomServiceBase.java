@@ -17,13 +17,13 @@ import okhttp3.Response;
 import okhttp3.ResponseBody;
 
 public abstract class CustomServiceBase {
-    protected boolean avaliable;
+    protected boolean available;
     protected OkHttpClient client;
     protected String baseUrl;
     protected String token;
 
-    public boolean isAvaliable() {
-        return avaliable;
+    public boolean isAvailable() {
+        return available;
     }
 
     // protected JSONObject generateTtsDirective(String tts, boolean disableEvent) {

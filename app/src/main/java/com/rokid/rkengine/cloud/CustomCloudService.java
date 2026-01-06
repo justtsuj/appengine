@@ -17,7 +17,7 @@ import java.util.List;
 public class CustomCloudService {
 
     private static volatile CustomCloudService instance;
-    private boolean avaliable;
+    private boolean available;
     // 需要捕获的appid
     // 默认配置，后续会尝试从配置文件加载覆盖
     private List<String> chatAppIds = new ArrayList<>(Arrays.asList(
@@ -38,11 +38,11 @@ public class CustomCloudService {
         try {
             AppConfig.load();
         } catch (Exception e) {
-            avaliable = false;
-            chatBot = null;
-            qWeather = null;
-            homeAssistant = null;
-            xiaoMusic = null;
+            this.available = false;
+            this.chatBot = null;
+            this.qWeather = null;
+            this.homeAssistant = null;
+            this.xiaoMusic = null;
             Logger.m1e("Failed to load config: " + e.getMessage());
             return;
         }
@@ -65,15 +65,15 @@ public class CustomCloudService {
 
         String xiaoMusicUrl = AppConfig.getString("xiaomusic.url", "");
 
-        avaliable = true;
+        this.available = true;
         chatBot = new ChatBot(chatBotApiKey, chatBotSystemPrompt, chatBotModel);
         qWeather = new QWeather(qWeatherUrl, qWeatherApiKey);
         homeAssistant = new HomeAssistant(homeAssistantUrl, homeAssistantToken);
         xiaoMusic = new XiaoMusic(xiaoMusicUrl);
     }
 
-    public boolean isAvaliable() {
-        return avaliable;
+    public boolean isAvailable() {
+        return available;
     }
 
     // 这里想要的逻辑是在原有的基础上添加，且保证添加的不重复
@@ -103,21 +103,37 @@ public class CustomCloudService {
      * hook 若琪原本的应用进行自定义响应
      */
     public void HookAction(JSONObject nlp, JSONObject action) {
-        if (!avaliable) return;
+        if (!available) return;
         if (action == null) return;
         try {
             String appId = nlp.getString("appId");
 
-            if (chatBot.avaliable && chatAppIds.contains(appId)) {
+            if (chatBot.available && chatAppIds.contains(appId)) {
                 chatBot.chat(nlp, action);
-            } else if (qWeather.avaliable && weatherAppIds.contains(appId)) {
+            } else if (qWeather.available && weatherAppIds.contains(appId)) {
                 qWeather.getWeatherForecast(nlp, action);
-            } else if (homeAssistant.avaliable && smartHomeAppIds.contains(appId)) {
+            } else if (homeAssistant.available && smartHomeAppIds.contains(appId)) {
                 homeAssistant.ProcessConversation(nlp, action);
-            } else if (xiaoMusic.avaliable && musicAppIds.contains(appId)) {
+            } else if (xiaoMusic.available && musicAppIds.contains(appId)) {
                 xiaoMusic.handleMusicReq(nlp, action);
             }
             // 添加对话记录
+            if (chatBot.available) {
+                String asr = nlp.getString("asr");
+                String tts = "";
+                JSONArray directives = action.getJSONObject("response").getJSONObject("action").getJSONArray("directives");
+                for (int i = 0; i < directives.length(); i++) {
+                    JSONObject directive = directives.getJSONObject(i);
+                    if ("voice".equals(directive.getString("type"))) {
+                        JSONObject item = directive.getJSONObject("item");
+                        tts = item.getString("tts");
+                        break;
+                    }
+                }
+                if (!asr.isEmpty() && !tts.isEmpty()) {
+                    chatBot.updateMessageHistory(asr, tts);
+                }
+            }
         } catch (JSONException e) {
             Logger.m1e("json error");
         }

@@ -43,7 +43,7 @@ public class QWeather extends CustomServiceBase {
 
     public QWeather(String baseUrl, String token) {
         if (baseUrl == null || baseUrl.isEmpty() || token == null || token.isEmpty()) {
-            this.avaliable = false;
+            this.available = false;
             this.baseUrl = null;
             this.token = null;
             this.client = null;
@@ -51,7 +51,7 @@ public class QWeather extends CustomServiceBase {
         }
         this.baseUrl = baseUrl;
         this.token = token;
-        this.avaliable = true;
+        this.available = true;
         this.client = new OkHttpClient.Builder()
                 .connectTimeout(5, TimeUnit.SECONDS)
                 .readTimeout(5, TimeUnit.SECONDS)
@@ -74,7 +74,7 @@ public class QWeather extends CustomServiceBase {
 //    }
 
     public void getWeatherForecast(JSONObject nlp, JSONObject action) throws WeatherApiException {
-        if (!avaliable) return;
+        if (!available) return;
 
         String location = "101010300"; // Default to Beijing
         int day = 0; // Default to today

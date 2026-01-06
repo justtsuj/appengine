@@ -22,7 +22,7 @@ public class XiaoMusic extends CustomServiceBase {
 
     public XiaoMusic(String baseUrl) {
         if (baseUrl == null || baseUrl.isEmpty()) {
-            this.avaliable = false;
+            this.available = false;
             this.baseUrl = null;
             this.token = null;
             this.client = null;
@@ -30,7 +30,7 @@ public class XiaoMusic extends CustomServiceBase {
         }
         this.baseUrl = baseUrl;
         this.token = null;
-        this.avaliable = true;
+        this.available = true;
         this.client = new OkHttpClient.Builder()
                 .connectTimeout(2, TimeUnit.SECONDS)
                 .readTimeout(2, TimeUnit.SECONDS)
@@ -39,7 +39,7 @@ public class XiaoMusic extends CustomServiceBase {
     }
 
     public void handleMusicReq(JSONObject nlp, JSONObject action) {
-        if (!avaliable) return;
+        if (!available) return;
         String requestUrl = null;
         // 解析意图构造url
         try {

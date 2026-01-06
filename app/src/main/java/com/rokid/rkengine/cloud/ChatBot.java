@@ -62,7 +62,7 @@ public class ChatBot extends CustomServiceBase {
 
     public ChatBot(String token, String systemPrompt, String modelName) {
         if (token == null || token.isEmpty()) {
-            this.avaliable = false;
+            this.available = false;
             this.baseUrl = null;
             this.token = null;
             this.client = null;
@@ -73,7 +73,7 @@ public class ChatBot extends CustomServiceBase {
         }
         this.baseUrl = "https://open.bigmodel.cn/api/paas/v4/chat/completions";
         this.token = token;
-        this.avaliable = true;
+        this.available = true;
         this.client = new OkHttpClient.Builder()
                 .connectTimeout(6, TimeUnit.SECONDS)
                 .readTimeout(6, TimeUnit.SECONDS)
@@ -87,7 +87,7 @@ public class ChatBot extends CustomServiceBase {
     }
 
     public void chat(JSONObject nlp, JSONObject action) {
-        if (!avaliable) return ;
+        if (!available) return ;
         String tts;
         long startTime = System.currentTimeMillis();
         RequestBody body;

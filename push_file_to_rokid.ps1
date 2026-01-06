@@ -236,6 +236,18 @@ if [ -d "$RemoteAPKDir" ]; then echo "exists"; else echo "not_exists"; fi
             Write-Host "APK文件的远程目录存在： $RemoteAPKDir" -ForegroundColor Green
 			
 			# 检查是否存在备份，没有则把当前文件备份一下
+            $checkBackupCmd = @"
+if [ -f "$RemoteAPKPath.bak" ]; then echo "backup_exists"; else echo "backup_not_exists"; fi
+"@
+
+            Write-Host "正在检查是否存在备份文件..."
+            $backupStatus = & adb -s $deviceSerial shell $checkBackupCmd
+            if ($backupStatus -like "*backup_not_exists*") {
+                Write-Host "没有备份文件，将备份当前文件..."
+                & adb -s $deviceSerial shell "cp $RemoteAPKPath $RemoteAPKPath.bak"
+            } else {
+                Write-Host "备份文件已存在，将直接覆盖..."
+            }
             
             # 推送APK文件
             & adb -s $deviceSerial push $ApkPath $RemoteAPKPath

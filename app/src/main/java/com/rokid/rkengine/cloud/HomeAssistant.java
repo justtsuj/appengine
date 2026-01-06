@@ -20,7 +20,7 @@ import okhttp3.RequestBody;
 public class HomeAssistant extends CustomServiceBase {
     public HomeAssistant(String baseUrl, String token) {
         if (baseUrl == null || baseUrl.isEmpty() || token == null || token.isEmpty()) {
-            this.avaliable = false;
+            this.available = false;
             this.baseUrl = null;
             this.token = null;
             this.client = null;
@@ -28,7 +28,7 @@ public class HomeAssistant extends CustomServiceBase {
         }
         this.baseUrl = baseUrl;
         this.token = token;
-        this.avaliable = true;
+        this.available = true;
         // 局域网服务，超时时间可以短一点
         this.client = new OkHttpClient.Builder()
                 .connectTimeout(2, TimeUnit.SECONDS)
@@ -67,7 +67,7 @@ public class HomeAssistant extends CustomServiceBase {
     }
 
     public void ProcessConversation(JSONObject nlp, JSONObject action) {
-        if (!avaliable) return;
+        if (!available) return;
 
 
         String tts;
