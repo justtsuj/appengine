@@ -11,25 +11,26 @@
 3. 申请HA key，[https://developers.home-assistant.io/docs/auth_api/#long-lived-access-token](https://developers.home-assistant.io/docs/auth_api/#long-lived-access-token)和[https://www.home-assistant.io/docs/authentication/](https://www.home-assistant.io/docs/authentication/)
 4. 部署xiaomusic，<font style="color:rgb(57, 63, 73);background-color:rgb(249, 249, 250);">docker push danmuuu/xiaomusic:arm64-latest，创建容器的参数参考原仓库</font>[https://github.com/hanxi/xiaomusic](https://github.com/hanxi/xiaomusic)。
 
-将上述配置添到配置文件对应的配置项中。
+将上述配置添到配置文件对应的配置项中。四个模块需要就配置，不需要就留空，互相之间不影响。
 
 ```properties
-# Hook的app ids
+# Hook的app ids，程序内置了一些基础的app ids，所以这部分不用填，供后续功能拓展用
+# 若琪技能的app id，如果有多个用逗号分割
 # chat-app.ids=
 # weather-app.ids=
 # smarthome-app.ids=
 # music-app.ids=
-# 智谱
+# 智谱服务需要的配置
 # zhipu.token=
 # zhipu.system.prompt=
 # zhipu.model=glm-4.6
-# 和风天气
+# 和风天气需要的配置
 # qweather.url=
 # qweather.token=
-# homeassistant
+# homeassistant需要的配置
 # ha.url=
 # ha.token=
-# xiaomusic
+# xiaomusic需要的配置
 # xiaomusic.url=
 ```
 

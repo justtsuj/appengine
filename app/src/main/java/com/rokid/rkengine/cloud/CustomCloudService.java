@@ -117,6 +117,7 @@ public class CustomCloudService {
             } else if (xiaoMusic.avaliable && musicAppIds.contains(appId)) {
                 xiaoMusic.handleMusicReq(nlp, action);
             }
+            // 添加对话记录
         } catch (JSONException e) {
             Logger.m1e("json error");
         }
