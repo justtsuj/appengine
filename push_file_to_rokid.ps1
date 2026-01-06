@@ -234,6 +234,8 @@ if [ -d "$RemoteAPKDir" ]; then echo "exists"; else echo "not_exists"; fi
         
         if ($apkDirExists -like "*exists*") {
             Write-Host "APK文件的远程目录存在： $RemoteAPKDir" -ForegroundColor Green
+			
+			# 检查是否存在备份，没有则把当前文件备份一下
             
             # 推送APK文件
             & adb -s $deviceSerial push $ApkPath $RemoteAPKPath
