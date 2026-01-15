@@ -142,8 +142,8 @@ try {
         } else {
             # 尝试连接指定设备
             Write-Host "尝试连接指定设备： $Device" -ForegroundColor Yellow
-            & adb connect $Device
-            if ($LASTEXITCODE -eq 0) {
+            $connectOutput = & adb connect $Device
+            if ($connectOutput -match 'connected') {
                 $deviceSerial = $Device
                 Write-Host "设备连接成功： $deviceSerial" -ForegroundColor Green
             } else {
